@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Escape Room Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --dark-color: #2d3436;
+            --light-color: #f5f6fa;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #d63031;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: var(--light-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo img {
+            height: 50px;
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .chat-container {
+            background-color: #16213e;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .chat-box {
+            height: 400px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 1rem;
+            border-radius: 15px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background-color: #0f3460;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-content p {
+            margin-bottom: 0.5rem;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 1rem;
+            background-color: #0f3460;
+            gap: 1rem;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            background-color: #1a1a2e;
+            color: white;
+            resize: none;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-area textarea:focus {
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .input-area button {
+            padding: 0 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-area button:hover {
+            background-color: #5649d6;
+            transform: translateY(-2px);
+        }
+
+        .input-area button:active {
+            transform: translateY(0);
+        }
+
+        .media-options {
+            display: flex;
+            gap: 1rem;
+            padding: 0 1rem 1rem;
+            background-color: #0f3460;
+        }
+
+        .media-btn {
+            flex: 1;
+            padding: 0.8rem;
+            background-color: #1a1a2e;
+            border: 1px solid var(--primary-color);
+            color: var(--secondary-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .media-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .camera-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .camera-container {
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        #cameraFeed {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .camera-btn {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .camera-btn:hover {
+            background-color: #5649d6;
+        }
+
+        .close-camera {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .examples {
+            margin-top: 2rem;
+        }
+
+        .examples h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+        }
+
+        .example-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .example-btn {
+            padding: 0.8rem;
+            background-color: #0f3460;
+            border: 1px solid var(--primary-color);
+            color: var(--secondary-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .example-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 1rem;
+            background-color: #0f3460;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            align-self: flex-start;
+        }
+
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.5s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .logo {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+            
+            .chat-box {
+                height: 300px;
+            }
+            
+            .input-area {
+                flex-direction: column;
+            }
+            
+            .input-area button {
+                padding: 0.8rem;
+            }
+            
+            .media-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#a29bfe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9 9 9 0 0 1 9 9z"></path>
+                    <path d="M18 13a6 6 0 0 1-6 6 6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6z"></path>
+                    <path d="M15 10a3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3z"></path>
+                </svg>
+                <h1>AI Escape Room Assistant</h1>
+            </div>
+            <p class="tagline">Stuck on a puzzle? Let our AI help you escape!</p>
+        </header>
+
+        <main>
+            <div class="chat-container">
+                <div class="chat-box" id="chatBox">
+                    <div class="message ai-message">
+                        <div class="message-content">
+                            <p>Hello! I'm your Escape Room Assistant. I can help with:</p>
+                            <p>1. Text riddles (type or click examples)</p>
+                            <p>2. Image puzzles (upload or capture photos)</p>
+                            <p>3. Combined text + image challenges</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-area">
+                    <textarea id="userInput" placeholder="Type your riddle or puzzle here..." rows="3"></textarea>
+                    <button id="sendButton"><i class="fas fa-paper-plane"></i> Solve</button>
+                </div>
+                
+                <div class="media-options">
+                    <button id="uploadBtn" class="media-btn">
+                        <i class="fas fa-upload"></i> Upload Image
+                    </button>
+                    <button id="cameraBtn" class="media-btn">
+                        <i class="fas fa-camera"></i> Use Camera
+                    </button>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            
+            <div class="examples">
+                <h3>Try these examples:</h3>
+                <div class="example-buttons">
+                    <button class="example-btn">What has a head but no brain?</button>
+                    <button class="example-btn">I have keys but no locks. I have space but no room. You can enter but can't go outside. What am I?</button>
+                    <button class="example-btn">The more you take, the more you leave behind. What am I?</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Camera Modal -->
+    <div class="camera-modal" id="cameraModal">
+        <div class="camera-container">
+            <button class="close-camera" id="closeCamera">
+                <i class="fas fa-times"></i>
+            </button>
+            <video id="cameraFeed" autoplay playsinline></video>
+            <div class="camera-controls">
+                <button id="captureBtn" class="camera-btn">
+                    <i class="fas fa-camera"></i> Capture
+                </button>
+                <button id="switchCamera" class="camera-btn">
+                    <i class="fas fa-sync-alt"></i> Switch
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Made by Shreayansh Pandey | Reg no - 12305847</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const sendButton = document.getElementById('sendButton');
+    const exampleButtons = document.querySelectorAll('.example-btn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const imageUpload = document.getElementById('imageUpload');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const cameraModal = document.getElementById('cameraModal');
+    const cameraFeed = document.getElementById('cameraFeed');
+    const closeCamera = document.getElementById('closeCamera');
+    const captureBtn = document.getElementById('captureBtn');
+    const switchCamera = document.getElementById('switchCamera');
+    
+    // Gemini API configuration
+    const API_KEY = "AIzaSyBNEi5uMB2EhVPZW-_usNG3myTP-ypXKO8";
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    
+    // Camera variables
+    let stream = null;
+    let currentFacingMode = "environment"; // Start with rear camera
+    let capturedImage = null;
+
+    // Add message to chat
+    function addMessage(content, isUser) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        // Handle line breaks in the content
+        const paragraphs = content.split('\n').filter(p => p.trim() !== '');
+        paragraphs.forEach(p => {
+            const pElem = document.createElement('p');
+            pElem.textContent = p;
+            contentDiv.appendChild(pElem);
+        });
+        
+        messageDiv.appendChild(contentDiv);
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    
+    // Show typing indicator
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.id = 'typingIndicator';
+        typingDiv.innerHTML = `
+            <span></span>
+            <span></span>
+            <span></span>
+        `;
+        chatBox.appendChild(typingDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    
+    // Hide typing indicator
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typingIndicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+    
+    // Query the Gemini API
+    async function queryGemini(prompt, imageBase64 = null) {
+        try {
+            const requestBody = {
+                contents: [{
+                    parts: [{
+                        text: `You are an expert escape room assistant. Analyze any visual puzzles or text riddles.
+                        For images: Describe key elements that might be clues, codes, patterns, or hidden messages.
+                        For text: Provide the solution and clear explanation.
+                        For combined input: Use both to solve the puzzle.
+                        
+                        Input: ${prompt}`
+                    }]
+                }],
+                generationConfig: {
+                    maxOutputTokens: 512,
+                    temperature: 0.7,
+                    topP: 0.9
+                }
+            };
+            
+            // Add image data if available
+            if (imageBase64) {
+                requestBody.contents[0].parts.push({
+                    inline_data: {
+                        mime_type: "image/jpeg",
+                        data: imageBase64
+                    }
+                });
+            }
+            
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestBody),
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || "API request failed");
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error("API Error:", error);
+            throw error;
+        }
+    }
+    
+    // Send message to Gemini API
+    async function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message && !capturedImage) return;
+        
+        if (message) addMessage(message, true);
+        if (capturedImage) {
+            addMessage("[Image puzzle]", true);
+            // Show thumbnail in chat
+            const imgMsg = document.createElement('img');
+            imgMsg.src = `data:image/jpeg;base64,${capturedImage}`;
+            imgMsg.style.maxHeight = "100px";
+            imgMsg.style.borderRadius = "5px";
+            imgMsg.style.marginTop = "0.5rem";
+            document.querySelector('.message:last-child .message-content').appendChild(imgMsg);
+        }
+        
+        userInput.value = '';
+        showTypingIndicator();
+        
+        try {
+            const response = await queryGemini(
+                message || "Analyze this image for escape room clues", 
+                capturedImage
+            );
+            hideTypingIndicator();
+            
+            let answer = "I couldn't analyze this. Can you provide more details?";
+            if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
+                answer = response.candidates[0].content.parts[0].text.trim();
+            }
+            
+            addMessage(answer, false);
+            
+            // Reset after processing
+            capturedImage = null;
+        } catch (error) {
+            hideTypingIndicator();
+            addMessage("Error: " + error.message, false);
+            console.error("Error:", error);
+        }
+    }
+    
+    // Start camera
+    async function startCamera(facingMode = "environment") {
+        try {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                    facingMode: facingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            });
+            
+            cameraFeed.srcObject = stream;
+            cameraModal.style.display = "flex";
+            currentFacingMode = facingMode;
+        } catch (err) {
+            console.error("Camera error:", err);
+            addMessage("Error: Could not access camera. Please check permissions.", false);
+        }
+    }
+    
+    // Stop camera
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        cameraFeed.srcObject = null;
+        cameraModal.style.display = "none";
+    }
+    
+    // Capture image from camera
+    function captureImage() {
+        const canvas = document.createElement('canvas');
+        canvas.width = cameraFeed.videoWidth;
+        canvas.height = cameraFeed.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to base64 JPEG with quality 0.8
+        capturedImage = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+        stopCamera();
+        
+        // Auto-send if no text input
+        if (!userInput.value.trim()) {
+            sendMessage();
+        }
+    }
+    
+    // Event listeners
+    sendButton.addEventListener('click', sendMessage);
+    
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    uploadBtn.addEventListener('click', () => imageUpload.click());
+    
+    imageUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                // Get base64 data (remove data URL prefix)
+                capturedImage = event.target.result.split(',')[1];
+                
+                // Auto-send if no text input
+                if (!userInput.value.trim()) {
+                    sendMessage();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    cameraBtn.addEventListener('click', () => startCamera());
+    
+    closeCamera.addEventListener('click', stopCamera);
+    
+    captureBtn.addEventListener('click', captureImage);
+    
+    switchCamera.addEventListener('click', () => {
+        const newFacingMode = currentFacingMode === "user" ? "environment" : "user";
+        startCamera(newFacingMode);
+    });
+    
+    exampleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            userInput.value = this.textContent;
+            userInput.focus();
+        });
+    });
+
+    // // Initial welcome message
+    // addMessage("Welcome to the AI Escape Room Assistant! I can help you solve:", false);
+    // addMessage("- Text riddles (type or click examples)", false);
+    // addMessage("- Image puzzles (use the camera or upload)", false);
+    // addMessage("- Combined text and image challenges", false);
+});
+    </script>
+</body>
+</html>
